@@ -66,9 +66,18 @@ const CartScreen = () => {
     fetchData();
   }, []);
 
+  // const handleBuyNow = () => {
+  //   navigation.navigate('Delivery');
+  // };
+
   const handleBuyNow = () => {
-    navigation.navigate('Delivery');
+    navigation.navigate('PayStackPayment', {
+      totalPrice,
+      cartItems,
+      userData,
+    });
   };
+  
 
   useEffect(() => {
     const fetchCartItems = async () => {
