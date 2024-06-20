@@ -12,7 +12,7 @@ import EditProfileScreen from '../screens/EditProfileScreen';
 import PayStackPayment from '../screens/PayStackPayment';
 import OrderSuccess from '../screens/OrderSuccessScreen';
 import useAuth from '../hooks/useAuth'; 
-// OrdersScreen
+
 const Stack = createNativeStackNavigator();
 
 LogBox.ignoreLogs([
