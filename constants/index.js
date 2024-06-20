@@ -1,8 +1,8 @@
 export const categories = [
   "Burger",
-  "Pizza",
-  "Sushi",
-  "Kebab",
+  "Swallow",
+  "Rice",
+  "Drinks",
   "Sweets",
   "Noodles",
   "Karahi"
