@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   FlatList,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { auth, db } from '../constants/firebase';
 import { useNavigation } from '@react-navigation/native';
@@ -51,6 +52,21 @@ const CartScreen = () => {
   const fetchData = async () => {
     try {
       await getUserData();
+      const user = auth.currentUser;
+      if (user) {
+        const cartQuery = query(collection(db, 'cart'), where('uid', '==', user.uid));
+        const querySnapshot = await getDocs(cartQuery);
+        const items = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+        setCartItems(items);
+        calculateTotal(items);
+      } else {
+        Toast.show('User is not logged in', {
+          duration: Toast.durations.SHORT,
+          position: Toast.positions.BOTTOM,
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching cart items: ', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -58,17 +74,8 @@ const CartScreen = () => {
   };
 
   useEffect(() => {
-    getUserData();
-  }, [auth.currentUser]);
-
-  
-  useEffect(() => {
     fetchData();
-  }, []);
-
-  // const handleBuyNow = () => {
-  //   navigation.navigate('Delivery');
-  // };
+  }, [auth.currentUser]);
 
   const handleBuyNow = () => {
     navigation.navigate('PayStackPayment', {
@@ -77,31 +84,6 @@ const CartScreen = () => {
       userData,
     });
   };
-  
-
-  useEffect(() => {
-    const fetchCartItems = async () => {
-      try {
-        const user = auth.currentUser;
-        if (user) {
-          const cartQuery = query(collection(db, 'cart'), where('uid', '==', user.uid));
-          const querySnapshot = await getDocs(cartQuery);
-          const items = querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-          setCartItems(items);
-          calculateTotal(items);
-        } else {
-          Toast.show('User is not logged in', {
-            duration: Toast.durations.SHORT,
-            position: Toast.positions.BOTTOM,
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching cart items: ', error);
-      }
-    };
-
-    fetchCartItems();
-  }, []);
 
   const calculateTotal = (items) => {
     const total = items.reduce((sum, item) => {
@@ -182,9 +164,13 @@ const CartScreen = () => {
         <View style={styles.headerSpacer} />
       </View>
 
-      {cartItems.length === 0 ? (
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0000ff" />
+        </View>
+      ) : cartItems.length === 0 ? (
         <View style={styles.emptyCartContainer}>
-          <Text style={styles.emptyCartText}>No item  on your Cart</Text>
+          <Text style={styles.emptyCartText}>No item on your Cart</Text>
           <TouchableOpacity onPress={() => navigation.navigate('Home')} style={styles.shopButton}>
             <Text style={styles.shopButtonText}>Shop Food Item</Text>
           </TouchableOpacity>
@@ -213,20 +199,18 @@ const CartScreen = () => {
                 <Text style={styles.editButtonText}>Edit</Text>
               </TouchableOpacity>
             </View>
+
             <View style={styles.deliveryItem}>
               <Text style={styles.deliveryLabel}>Contact</Text>
-              <Text style={styles.deliveryValue}>{userData.phoneNumber || ''}</Text>
-              <TouchableOpacity onPress={() => navigation.navigate('EditProfile')} style={styles.editButton}>
-                <Text style={styles.editButtonText}>Edit</Text>
-              </TouchableOpacity>
+              <Text style={styles.deliveryValue}>{userData.phoneNumber || ''}</Text>              
             </View>
+
             <View style={styles.deliveryItem}>
               <Text style={styles.deliveryLabel}>Estimated delivery time</Text>
               <Text style={styles.deliveryValue}>20 - 50 mins</Text>             
             </View>
           </View>
 
-  
           <TouchableOpacity onPress={handleBuyNow} style={styles.checkoutButton}>
             <Text style={styles.checkoutButtonText}>Checkout (₦ {totalPrice.toFixed(2)})</Text>
           </TouchableOpacity>
@@ -361,6 +345,11 @@ const styles = StyleSheet.create({
   headerSpacer: {
     width: 30,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   emptyCartContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -382,9 +371,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-
-
-
   deliveryDetails: {
     padding: 15,
     borderTopWidth: 1,

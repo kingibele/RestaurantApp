@@ -115,7 +115,7 @@ const EditProfileScreen = ({ navigation }) => {
 
           <View className="flex-row justify-center">                        
             <Image
-              source={require('../assets/images/avatar.jpeg')}
+              source={require('../assets/images/avatar.png')}
               style={{width: 100, height: 100, borderRadius: 70, }}
             />
           </View>

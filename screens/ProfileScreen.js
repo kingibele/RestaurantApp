@@ -6,18 +6,19 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { signOut } from 'firebase/auth';
 import { auth, db } from '../constants/firebase';
-import { MaterialIcons, Ionicons } from '@expo/vector-icons';
-import { doc, getDoc, getDocs, query, collection, where, } from 'firebase/firestore';
+import { MaterialIcons, Ionicons, AntDesign } from '@expo/vector-icons';
+import { getDocs, query, collection, where } from 'firebase/firestore';
+import { ChevronLeftIcon } from 'react-native-heroicons/solid';
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
   const [userData, setUserData] = useState({});
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
 
   const getUserData = async () => {
     const userQuery = query(
@@ -36,22 +37,11 @@ const ProfileScreen = () => {
         console.error('User data is null');
         return;
       }
-      
-      setUserData({
-        ...user,
-      });
-     
+      setUserData({ ...user });
     } catch (error) {
       console.error('Error fetching user data:', error);
-    }
-  };
-  
-  const fetchData = async () => {
-    try {
-      await getUserData();
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
   };
 
@@ -59,14 +49,9 @@ const ProfileScreen = () => {
     getUserData();
   }, [auth.currentUser]);
 
-  
-  useEffect(() => {
-    fetchData();
-  }, []);
-
   const handleLogout = async () => {
     await signOut(auth);
-    navigation.replace('Login'); 
+    navigation.replace('Login');
   };
 
   if (loading) {
@@ -77,20 +62,64 @@ const ProfileScreen = () => {
     );
   }
 
+  const handleMenuPress = (itemName) => {
+    const trimmedItemName = itemName.trim();
+    console.log(`Menu item clicked: ${trimmedItemName}`);
+    if (trimmedItemName === 'Orders') {
+      console.log('Navigating to OrdersListScreen');
+      navigation.navigate('OrdersList');
+    } else if (trimmedItemName === 'Edit Profile') {
+      console.log('Navigating to EditProfile');
+      navigation.navigate('EditProfile');
+    } else if (trimmedItemName === 'Saved Items') {
+      console.log('Navigating to SavedItems');
+      navigation.navigate('SavedItems');
+    } else {
+      console.log('Item name does not match any navigation case');
+    }
+  };
+
+  // const handleMenuPress = (itemName) => {
+  //   const trimmedItemName = itemName.trim();
+  //   console.log(`Menu item clicked: ${trimmedItemName}`);
+  //   if (trimmedItemName === 'Edit Profile') {
+  //     console.log('Navigating to EditProfile');
+  //     console.log('Navigation object:', navigation);
+  //     navigation.navigate('EditProfile');
+  //   }  else {
+  //     console.log('Item name does not match');
+  //   }
+  // };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.welcomeText}>Welcome {userData.fullName || ''}</Text>
+        <TouchableOpacity onPress={() => navigation.goBack()} className="bg-white rounded-2xl p-3 shadow">
+          <ChevronLeftIcon size="23" stroke={50} color="black" />
+        </TouchableOpacity>
+
+        <Image
+          className="h-12 w-12 rounded-2xl"
+          source={require('../assets/images/avatar.png')}
+          style={{ backgroundColor: 'rgba(255,255,255,0.7)' }}
+        />
+        <Text style={styles.welcomeText}>Welcome, {userData.fullName || ''}</Text>
         <Text style={styles.emailText}>{userData.email || ''}</Text>
       </View>
+
       <View style={styles.menu}>
         {menuItems.map((item, index) => (
-          <TouchableOpacity key={index} style={styles.menuItem}>
+          <TouchableOpacity
+            key={index}
+            style={styles.menuItem}
+            onPress={() => handleMenuPress(item.name)}
+          >
             {item.icon}
-            <Text style={styles.menuItemText}>{item.name}</Text>          
+            <Text style={styles.menuItemText}>{item.name}</Text>
           </TouchableOpacity>
         ))}
       </View>
+
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutButtonText}>Logout</Text>
       </TouchableOpacity>
@@ -101,6 +130,7 @@ const ProfileScreen = () => {
 const menuItems = [
   { name: 'Orders', icon: <MaterialIcons name="list-alt" size={24} color="black" /> },
   { name: 'Saved Items', icon: <Ionicons name="heart-outline" size={24} color="black" /> },
+  { name: 'Edit Profile', icon: <AntDesign name="user" size={24} color="black" /> },
 ];
 
 const styles = StyleSheet.create({

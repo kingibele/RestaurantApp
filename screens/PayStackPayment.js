@@ -27,6 +27,8 @@ const PayStackPayment = ({ route }) => {
   };
 
   const handlePaymentSuccess = async (response) => {
+    console.log('Payment success response:', response);
+    setLoading(true);
     try {
       const orderData = {
         foodItems: cartItems,
@@ -37,9 +39,12 @@ const PayStackPayment = ({ route }) => {
         timestamp: new Date(),
       };
 
+      console.log('Saving order data:', orderData);
+
       const ordersCollection = collection(db, 'orders');
       await addDoc(ordersCollection, orderData);
       console.log('Order saved successfully!');
+      setLoading(false);
       navigation.navigate('OrderSuccess');
     } catch (error) {
       console.error('Error saving order:', error);
@@ -48,25 +53,26 @@ const PayStackPayment = ({ route }) => {
         position: Toast.positions.BOTTOM,
         backgroundColor: 'red',
       });
+      setLoading(false);
     }
   };
 
-    const handlePaymentCancel = (response) => {
-        console.log(response);
-        Toast.show('Payment cancelled', {
-        duration: Toast.durations.LONG,
-        position: Toast.positions.BOTTOM,
-        });
-        navigation.navigate('Cart');
-    };
+  const handlePaymentCancel = (response) => {
+    console.log('Payment cancelled:', response);
+    Toast.show('Payment cancelled', {
+      duration: Toast.durations.LONG,
+      position: Toast.positions.BOTTOM,
+    });
+    navigation.navigate('Cart');
+  };
 
   return (
     <ScrollView style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
-    <RNStatusBar backgroundColor="#06191D" barStyle="white-content" />
+      <RNStatusBar backgroundColor="#06191D" barStyle="white-content" />
       <View style={styles.container}>
         <View 
-            className="flex-1 bg-white px-8 pt-8"
-            style={styles.infoContainer}
+          className="flex-1 bg-white px-8 pt-8"
+          style={styles.infoContainer}
         >
           <Text style={styles.infoText}>Total Price: ₦{totalPrice.toFixed(2)}</Text>
           <Text style={styles.infoText}>Name: {userData.fullName}</Text>
@@ -91,12 +97,17 @@ const PayStackPayment = ({ route }) => {
             <View style={{ flex: 1 }}>
               <Paystack
                 paystackKey="pk_test_171072423cd87d4bdd73185a603e918349106d04"
-                // paystackKey="pk_live_90b55fa1a44464d95656f61a26f0389d53bd467a"
                 amount={totalPrice * 100} // Convert to kobo
                 billingEmail={userData.email}
                 activityIndicatorColor="green"
-                onSuccess={handlePaymentSuccess}
-                onCancel={handlePaymentCancel}
+                onCancel={(e) => {
+                  console.log('Payment cancelled:', e);
+                  handlePaymentCancel(e);
+                }}
+                onSuccess={(response) => {
+                  console.log('Paystack response:', response);
+                  handlePaymentSuccess(response);
+                }}
                 ref={paystackWebViewRef}
               />
             </View>
