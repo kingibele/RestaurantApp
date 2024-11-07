@@ -97,6 +97,7 @@ const PayStackPayment = ({ route }) => {
             <View style={{ flex: 1 }}>
               <Paystack
                 paystackKey="pk_test_171072423cd87d4bdd73185a603e918349106d04"
+                // paystackKey="pk_live_90b55fa1a44464d95656f61a26f0389d53bd467a"
                 amount={totalPrice * 100} // Convert to kobo
                 billingEmail={userData.email}
                 activityIndicatorColor="green"

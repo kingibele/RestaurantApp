@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "app-ui",
+    "name": "RestaurantApp",
     "slug": "app-ui",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -21,7 +21,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.example.RestaurantApp"
     },
     "web": {
       "favicon": "./assets/favicon.png"

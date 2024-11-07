@@ -126,7 +126,7 @@ export default function FoodDetailsScreen(props) {
 
     const handleSaveItem = async () => {
         if (liked) {
-            // Remove item from saved_items collection
+            // Remove item from saved_items collection 
             try {
                 const savedItemsQuery = query(
                     collection(db, 'saved_items'),
